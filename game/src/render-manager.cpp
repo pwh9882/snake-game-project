@@ -9,6 +9,7 @@ void RenderManager::renderScreen()
         printw("The pressed key is ");
         attron(A_BOLD);
         printw("%c\n", inputManager.recent_user_input);
+        printw("%d\n", stageManager.game_progress_counter);
         attroff(A_BOLD);
     }
 
@@ -37,11 +38,11 @@ void RenderManager::renderScreen()
             {
                 printw("=");
             }
-            else if (curr == -15)
+            else if (curr >= -15 && curr < -10)
             {
                 printw("*");
             }
-            else if (curr == -25)
+            else if (curr >= -25 && curr < -20)
             {
                 printw("X");
             }

@@ -32,4 +32,5 @@ public:
     StageManager();
     void initStage();
     void updateGame();
+    void getRandomCordForItem();
 };

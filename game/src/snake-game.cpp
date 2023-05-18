@@ -52,8 +52,12 @@ int main()
                 printw("%d\n", thick_count);
                 renderManager.renderScreen();
             }
+
             if (thick_count > FPS_SET)
+            {
+                stageManager.game_progress_counter++;
                 thick_count = 1;
+            }
         }
     }
     return 0;
