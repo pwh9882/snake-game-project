@@ -1,0 +1,5 @@
+.DS_Store
+demo-game/demo-game
+demo-game/demo-game.o
+
+game/snake-game
