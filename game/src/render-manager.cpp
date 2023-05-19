@@ -13,15 +13,44 @@ Gate -4
 Growth -15 ~ -10
 Poison -25 ~ -20
 */
+RenderManager::RenderManager()
+{
+}
+
+void RenderManager::initWindows(WINDOW *stdscr)
+{
+    game_window = subwin(stdscr, 21, 22, 1, 1);
+    init_pair(2, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
+    attron(COLOR_PAIR(2));
+    wbkgd(game_window, COLOR_PAIR(2));
+
+    debug_window = subwin(stdscr, 5, 25, 1, 25);
+    init_pair(3, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
+    attron(COLOR_PAIR(3));
+    wbkgd(debug_window, COLOR_PAIR(3));
+
+    score_window = subwin(stdscr, 5, 25, 7, 25);
+    init_pair(4, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
+    attron(COLOR_PAIR(4));
+    wbkgd(score_window, COLOR_PAIR(4));
+
+    goal_window = subwin(stdscr, 5, 25, 13, 25);
+    init_pair(5, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
+    attron(COLOR_PAIR(5));
+    wbkgd(goal_window, COLOR_PAIR(5));
+}
 
 void RenderManager::renderScreen()
 {
+    wprintw(goal_window, "goal_window_preview");
+    wprintw(score_window, "score_window_preview");
     if (inputManager.recent_user_input != 0)
     {
-        printw("The pressed key is ");
+
+        wprintw(debug_window, "The pressed key is ");
         attron(A_BOLD);
-        printw("%c\n", inputManager.recent_user_input);
-        printw("%d\n", stageManager.game_progress_counter);
+        wprintw(debug_window, "%c\n", inputManager.recent_user_input);
+        wprintw(debug_window, "%d\n", stageManager.game_progress_counter);
         attroff(A_BOLD);
     }
 
@@ -32,37 +61,37 @@ void RenderManager::renderScreen()
             int curr = stageManager.root_map[i][j];
             if (curr > 0)
             {
-                printw("@");
+                wprintw(game_window, "@");
             }
             else if (curr == 0)
             {
-                printw(".");
+                wprintw(game_window, ".");
             }
             else if (curr == -1)
             {
-                printw("&");
+                wprintw(game_window, "&");
             }
             else if (curr == -2)
             {
-                printw("#");
+                wprintw(game_window, "#");
             }
             else if (curr == -3)
             {
-                printw("=");
+                wprintw(game_window, "=");
             }
             else if (curr == -4)
             {
-                printw("O");
+                wprintw(game_window, "O");
             }
             else if (curr == -15)
             {
-                printw("*");
+                wprintw(game_window, "*");
             }
             else if (curr == -25)
             {
-                printw("X");
+                wprintw(game_window, "X");
             }
         }
-        printw("\n");
+        wprintw(game_window, "\n");
     }
 }

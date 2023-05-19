@@ -17,6 +17,12 @@ RenderManager renderManager;
 int main()
 {
     initscr();
+    start_color();
+    // init_pair(1, COLOR_RED, COLOR_GREEN);
+    // attron(COLOR_PAIR(1));
+    // wbkgd(stdscr, COLOR_PAIR(1));
+    box(stdscr, 0, 0);
+
     raw();                /* Line buffering disabled      */
     keypad(stdscr, TRUE); /* We get F1, F2 etc..          */
     noecho();             /* Don't echo() while we do getch */
@@ -27,6 +33,7 @@ int main()
     int thick_count = 0;
     int recent_user_input = KEY_LEFT;
     stageManager.initStage();
+    renderManager.initWindows(stdscr);
     while (true)
     {
         // handleInput
@@ -48,8 +55,19 @@ int main()
 
                 // render screen
                 clear();
-                printw("%d\n", thick_count);
+                wclear(renderManager.game_window);
+                wclear(renderManager.debug_window);
+                wclear(renderManager.score_window);
+                wclear(renderManager.goal_window);
+
+                wprintw(stdscr, "%d\n", thick_count);
                 renderManager.renderScreen();
+
+                refresh();
+                wrefresh(renderManager.game_window);
+                wrefresh(renderManager.debug_window);
+                wrefresh(renderManager.score_window);
+                wrefresh(renderManager.goal_window);
             }
 
             if (thick_count > FPS_SET)
@@ -59,5 +77,6 @@ int main()
             }
         }
     }
+    // endwin();
     return 0;
 }
