@@ -3,3 +3,8 @@ demo-game/demo-game
 demo-game/demo-game.o
 
 game/snake-game
+snack-game
+game/src/input-manager.o
+game/src/render-manager.o
+game/src/snake-game.o
+game/src/stage-manager.o

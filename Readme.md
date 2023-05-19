@@ -13,3 +13,7 @@ demo-game 폴더 안의 make파일을 실행한 결과물 demo-game을 실행하
 2단계 Snake 표현 및 조작
 3단계 Item 요소의 구현
 위 3단계를 간단하게 구현한 demo-game을 실행해 볼 수 있습니다.
+
+## snake-game 빌드 방법
+
+game 폴더로 cd 한 후 make로 빌드. root 폴더에 snack-game이 생성됩니다.

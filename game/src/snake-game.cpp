@@ -1,6 +1,5 @@
 #include <iostream>
 #include <chrono>
-#include <cstdint>
 #include <ncurses.h>
 #include "mangers.h"
 

@@ -2,6 +2,18 @@
 #include <ncurses.h>
 extern InputManager inputManager;
 extern StageManager stageManager;
+
+/*
+nothing: 0
+snack_head:-1
+snack_body:1~INT_MAX;
+Immune Wall -2
+Wall -3
+Gate -4
+Growth -15 ~ -10
+Poison -25 ~ -20
+*/
+
 void RenderManager::renderScreen()
 {
     if (inputManager.recent_user_input != 0)
