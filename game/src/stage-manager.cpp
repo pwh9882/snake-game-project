@@ -23,10 +23,11 @@ void StageManager::initStage()
 {
     current_snack_length = start_snack_length;
     game_progress_counter = 0;
+    current_game_speed = 2;
 }
 void StageManager::updateGame()
 {
-    int headX = 0, headY = 0;
+    int head_Y = 0, head_X = 0;
     // 머리 찾기
     for (int i = 0; i < 21; i++)
     {
@@ -35,73 +36,35 @@ void StageManager::updateGame()
             int curr = root_map[i][j];
             if (curr == -1)
             {
-                headX = i;
-                headY = j;
+                head_Y = i;
+                head_X = j;
             }
         }
         // printw("\n");
     }
 
     // ======================================
-    // 머리이동
-    int nextX = headX, nextY = headY;
+    // 머리 좌표 이동
+    int next_Y = head_Y, next_X = head_X;
     switch (inputManager.recent_user_input)
     {
     case KEY_LEFT:
-        nextY--;
+        next_X--;
         break;
     case KEY_RIGHT:
-        nextY++;
+        next_X++;
         break;
     case KEY_UP:
-        nextX--;
+        next_Y--;
         break;
     case KEY_DOWN:
-        nextX++;
+        next_Y++;
         break;
     }
 
     // ======================================
-    // 아무것도 없으면 이동
-    if (root_map[nextX][nextY] == 0)
-    {
-        root_map[headX][headY] = current_snack_length;
-        root_map[nextX][nextY] = -1;
-    }
-    // 성장아이템 먹으면 길이 + 1
-    else if (root_map[nextX][nextY] >= -15 && root_map[nextX][nextY] < -10)
-    {
-        root_map[headX][headY] = current_snack_length++;
-        root_map[nextX][nextY] = -1;
-        for (int i = 0; i < 21; i++)
-        {
-            for (int j = 0; j < 21; j++)
-            {
-                int curr = root_map[i][j];
-                if (curr > 0)
-                {
-                    root_map[i][j]++;
-                }
-            }
-        }
-    }
-    // posion 아이템 섭취시 몸톨 길이 -1
-    else if (root_map[nextX][nextY] >= -25 && root_map[nextX][nextY] < -20)
-    {
-        root_map[headX][headY] = current_snack_length--;
-        root_map[nextX][nextY] = -1;
-        for (int i = 0; i < 21; i++)
-        {
-            for (int j = 0; j < 21; j++)
-            {
-                int curr = root_map[i][j];
-                if (curr > 0)
-                {
-                    root_map[i][j]--;
-                }
-            }
-        }
-    }
+    // 머리 이동 시도
+    tryMoveHeadTo(next_X, next_Y, head_X, head_Y);
 
     // ======================================
     // 몸통죽이기 & 아이템 죽이기
@@ -167,7 +130,200 @@ void StageManager::updateGame()
     }
 }
 
-void StageManager::getRandomCordForItem()
+void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
 {
-    int a = 0;
+    // ======================================
+    // 아무것도 없으면 이동
+    if (root_map[next_Y][next_X] == 0)
+    {
+        root_map[head_Y][head_X] = current_snack_length;
+        root_map[next_Y][next_X] = -1;
+    }
+    // 성장아이템 먹으면 길이 + 1
+    else if (root_map[next_Y][next_X] == -15)
+    {
+        root_map[head_Y][head_X] = current_snack_length++;
+        root_map[next_Y][next_X] = -1;
+        for (int i = 0; i < 21; i++)
+        {
+            for (int j = 0; j < 21; j++)
+            {
+                int curr = root_map[i][j];
+                if (curr > 0)
+                {
+                    root_map[i][j]++;
+                }
+            }
+        }
+    }
+    // posion 아이템 섭취시 몸톨 길이 -1
+    else if (root_map[next_Y][next_X] == -25)
+    {
+        root_map[head_Y][head_X] = current_snack_length--;
+        root_map[next_Y][next_X] = -1;
+        for (int i = 0; i < 21; i++)
+        {
+            for (int j = 0; j < 21; j++)
+            {
+                int curr = root_map[i][j];
+                if (curr > 0)
+                {
+                    root_map[i][j]--;
+                }
+            }
+        }
+    }
+    // Gate 통과 시
+    else if (root_map[next_Y][next_X] == -4)
+    {
+        for (int k = 0; k < 21 * 21; k++)
+        {
+            int i = k / 21;
+            int j = k % 21;
+            int &curr = root_map[i][j];
+            if (curr == -4 && next_Y != i && next_X != j)
+            {
+                next_Y = i;
+                next_X = j;
+                break;
+            }
+        }
+
+        // 출구 정하기
+        // KEY_UP 상태로 들어가기
+        if (inputManager.recent_user_input == KEY_UP)
+        {
+            // 위 -> 오른 -> 왼 -> 아래 순으로 진출
+            int curr = root_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25) && next_Y - 1 >= 0)
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25) && next_X + 1 < 21)
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25) && next_X - 1 >= 0)
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25) && next_Y + 1 < 21)
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+        }
+
+        // KEY_DOWN
+        else if (inputManager.recent_user_input == KEY_DOWN)
+        {
+            // 아래 -> 왼 -> 위 -> 오른 순으로 진출
+            int curr = root_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25) && next_Y + 1 < 21)
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25) && next_X - 1 >= 0)
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25) && next_Y - 1 >= 0)
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25) && next_X + 1 < 21)
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+
+        // => KEY_RIGHT
+        else if (inputManager.recent_user_input == KEY_RIGHT)
+        {
+            // 오른 -> 아래 -> 위 -> 왼 순으로 진출
+            int curr = root_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25) && next_X + 1 < 21)
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25) && next_Y + 1 < 21)
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25) && next_Y - 1 >= 0)
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25) && next_X - 1 >= 0)
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+
+        // <= KEY_LEFT
+        else if (inputManager.recent_user_input == KEY_LEFT)
+        {
+            // 왼 -> 위 -> 아래 -> 위 순으로 진출
+            int curr = root_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25) && next_X - 1 >= 0)
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25) && next_Y - 1 >= 0)
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25) && next_Y + 1 < 21)
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+            curr = root_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25) && next_X + 1 < 21)
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+    }
 }

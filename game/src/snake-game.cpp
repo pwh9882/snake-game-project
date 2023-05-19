@@ -8,7 +8,6 @@ using namespace std;
 using namespace chrono;
 
 const int FPS_SET = 60;                             // 기본 출력 fps 설정
-const int RENDERFPS = 2;                            // 1초에 얼마나 렌더링 할 것인지
 using frame = duration<int32_t, ratio<1, FPS_SET>>; // FPS_SET fps를 위한 시간 단위
 using ms = duration<float, milli>;                  // 밀리초 단위
 
@@ -41,7 +40,8 @@ int main()
                                             // cout << "LastFrame: " << duration_cast<ms>(FPS).count() << "ms | FPS: " << FPS.count() * FPS_SET << endl; // 프레임 정보 출력
 
             thick_count++;
-            if (thick_count % (FPS_SET / RENDERFPS) == 0)
+
+            if (thick_count % (FPS_SET / stageManager.current_game_speed) == 0)
             {
 
                 // update game

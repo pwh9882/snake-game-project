@@ -38,11 +38,15 @@ void RenderManager::renderScreen()
             {
                 printw("=");
             }
-            else if (curr >= -15 && curr < -10)
+            else if (curr == -4)
+            {
+                printw("O");
+            }
+            else if (curr == -15)
             {
                 printw("*");
             }
-            else if (curr >= -25 && curr < -20)
+            else if (curr == -25)
             {
                 printw("X");
             }
