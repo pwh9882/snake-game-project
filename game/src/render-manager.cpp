@@ -45,7 +45,7 @@ void RenderManager::renderScreen()
     renderGameScreen();
     renderDebugScreen();
     renderScoreScreen();
-    renderGoalScreen();
+    renderMissionScreen();
 }
 
 void RenderManager::renderGameScreen()
@@ -117,7 +117,7 @@ void RenderManager::renderScoreScreen()
     wprintw(score_window, "Posion Earned: %d\n", stageManager.posion_item_count);
     wprintw(score_window, "Gate Passed: %d\n", stageManager.gate_passed_count);
 }
-void RenderManager::renderGoalScreen()
+void RenderManager::renderMissionScreen()
 {
     attron(A_BOLD);
     wprintw(goal_window, "Mission \n");

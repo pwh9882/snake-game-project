@@ -12,6 +12,6 @@ public:
     void renderScreen();
     void renderGameScreen();
     void renderScoreScreen();
-    void renderGoalScreen();
+    void renderMissionScreen();
     void renderDebugScreen();
 };
