@@ -42,18 +42,14 @@ void RenderManager::initWindows(WINDOW *stdscr)
 
 void RenderManager::renderScreen()
 {
-    wprintw(goal_window, "goal_window_preview");
-    wprintw(score_window, "score_window_preview");
-    if (inputManager.recent_user_input != 0)
-    {
+    renderGameScreen();
+    renderDebugScreen();
+    renderScoreScreen();
+    renderGoalScreen();
+}
 
-        wprintw(debug_window, "The pressed key is ");
-        attron(A_BOLD);
-        wprintw(debug_window, "%c\n", inputManager.recent_user_input);
-        wprintw(debug_window, "%d\n", stageManager.game_progress_counter);
-        attroff(A_BOLD);
-    }
-
+void RenderManager::renderGameScreen()
+{
     for (int i = 0; i < 21; i++)
     {
         for (int j = 0; j < 21; j++)
@@ -73,7 +69,7 @@ void RenderManager::renderScreen()
             }
             else if (curr == -2)
             {
-                waddch(game_window, char (219));
+                waddch(game_window, char(219));
             }
             else if (curr == -3)
             {
@@ -85,7 +81,7 @@ void RenderManager::renderScreen()
             }
             else if (curr == -15)
             {
-                wattron(game_window, A_BLINK | A_BOLD); 
+                wattron(game_window, A_BLINK | A_BOLD);
                 waddch(game_window, '*');
                 wattroff(game_window, A_BLINK | A_BOLD);
             }
@@ -95,5 +91,32 @@ void RenderManager::renderScreen()
             }
         }
         wprintw(game_window, "\n");
+    }
+}
+
+void RenderManager::renderScoreScreen()
+{
+    // wprintw(score_window, "score_window_preview\n");
+    wprintw(score_window, "Current Length: %d\n", stageManager.current_snack_length);
+    wprintw(score_window, "Max Length: %d\n", stageManager.max_snack_length);
+    wprintw(score_window, "Growth Earned: %d\n", stageManager.growth_item_count);
+    wprintw(score_window, "Posion Earned: %d\n", stageManager.posion_item_count);
+    wprintw(score_window, "Gate Passed: %d\n", stageManager.gate_passed_count);
+}
+void RenderManager::renderGoalScreen()
+{
+    wprintw(goal_window, "goal_window_preview");
+}
+
+void RenderManager::renderDebugScreen()
+{
+    if (inputManager.recent_user_input != 0)
+    {
+
+        wprintw(debug_window, "The pressed key is ");
+        attron(A_BOLD);
+        wprintw(debug_window, "%c\n", inputManager.recent_user_input);
+        wprintw(debug_window, "%d\n", stageManager.item_spawn_cooltime_counter);
+        attroff(A_BOLD);
     }
 }

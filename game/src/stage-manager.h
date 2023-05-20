@@ -28,8 +28,16 @@ public:
     };
     const int start_snack_length = 4;
     int current_snack_length;
+    int max_snack_length;
+    int growth_item_count;
+    int posion_item_count;
+    int gate_passed_count;
+
+    int item_spawn_cooltime;
+    int item_spawn_cooltime_counter;
+
     int current_game_speed;
-    int game_progress_counter;
+
     StageManager();
     void initStage();
     void updateGame();

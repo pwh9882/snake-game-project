@@ -22,8 +22,15 @@ StageManager::StageManager()
 void StageManager::initStage()
 {
     current_snack_length = start_snack_length;
-    game_progress_counter = 0;
+    max_snack_length = current_snack_length;
     current_game_speed = 2;
+
+    growth_item_count = 0;
+    posion_item_count = 0;
+    gate_passed_count = 0;
+
+    item_spawn_cooltime = 5;
+    item_spawn_cooltime_counter = 0;
 }
 void StageManager::updateGame()
 {
@@ -77,26 +84,13 @@ void StageManager::updateGame()
             {
                 curr--;
             }
-            // else if (curr >= -15 && curr < -10)
-            // {
-            //     curr++;
-            // }
-            // else if (curr >= -25 && curr < -20)
-            // {
-            //     curr++;
-            // }
-
-            // if (curr == -10 || curr == -20)
-            // {
-            //     curr = 0;
-            // }
         }
     }
 
     // 틱 마다 아이템 생성
-    if (game_progress_counter == 5)
+    if (item_spawn_cooltime_counter == 5)
     {
-        game_progress_counter = 0;
+        item_spawn_cooltime_counter = 0;
         std::vector<int> emptyBlockCords;
         for (int i = 0; i < 21; i++)
         {
@@ -144,6 +138,8 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
     {
         root_map[head_Y][head_X] = current_snack_length++;
         root_map[next_Y][next_X] = -1;
+        growth_item_count++;
+        max_snack_length = (max_snack_length < current_snack_length) ? current_snack_length : max_snack_length;
         for (int i = 0; i < 21; i++)
         {
             for (int j = 0; j < 21; j++)
@@ -159,6 +155,7 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
     // posion 아이템 섭취시 몸톨 길이 -1
     else if (root_map[next_Y][next_X] == -25)
     {
+        posion_item_count++;
         root_map[head_Y][head_X] = current_snack_length--;
         root_map[next_Y][next_X] = -1;
         for (int i = 0; i < 21; i++)
@@ -176,6 +173,7 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
     // Gate 통과 시
     else if (root_map[next_Y][next_X] == -4)
     {
+        gate_passed_count++;
         for (int k = 0; k < 21 * 21; k++)
         {
             int i = k / 21;

@@ -10,4 +10,8 @@ public:
     RenderManager();
     void initWindows(WINDOW *stdscr);
     void renderScreen();
+    void renderGameScreen();
+    void renderScoreScreen();
+    void renderGoalScreen();
+    void renderDebugScreen();
 };
