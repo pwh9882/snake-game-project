@@ -116,7 +116,10 @@ void RenderManager::renderDebugScreen()
         wprintw(debug_window, "The pressed key is ");
         attron(A_BOLD);
         wprintw(debug_window, "%c\n", inputManager.recent_user_input);
-        wprintw(debug_window, "%d\n", stageManager.item_spawn_cooltime_counter);
+        wprintw(debug_window, "item cooltime: %d\n", stageManager.item_spawn_cooltime_counter);
+        wprintw(debug_window, "game_over_flag: %d\n", stageManager.game_over_flag);
+        wprintw(debug_window, "gate cooltime: %d\n", stageManager.gate_spawn_cooltime_counter);
+        wprintw(debug_window, "passing flag: %d\n", stageManager.is_snake_passing_gate_flag);
         attroff(A_BOLD);
     }
 }

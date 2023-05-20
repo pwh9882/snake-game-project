@@ -31,6 +31,11 @@ void StageManager::initStage()
 
     item_spawn_cooltime = 5;
     item_spawn_cooltime_counter = 0;
+
+    gate_spawn_cooltime = 10;
+    gate_spawn_cooltime_counter = 0;
+
+    game_over_flag = false;
 }
 void StageManager::updateGame()
 {
@@ -86,9 +91,13 @@ void StageManager::updateGame()
             }
         }
     }
+    if (is_snake_passing_gate_flag > 0)
+    {
+        is_snake_passing_gate_flag--;
+    }
 
     // 틱 마다 아이템 생성
-    if (item_spawn_cooltime_counter == 5)
+    if (item_spawn_cooltime_counter == item_spawn_cooltime)
     {
         item_spawn_cooltime_counter = 0;
         std::vector<int> emptyBlockCords;
@@ -122,6 +131,41 @@ void StageManager::updateGame()
         value = emptyBlockCords[index];
         root_map[value / 21][value % 21] = -25;
     }
+
+    // 틱마다 gate 생성
+    if (gate_spawn_cooltime_counter > gate_spawn_cooltime && is_snake_passing_gate_flag == false)
+    {
+        gate_spawn_cooltime_counter = 0;
+        std::vector<int> emptyWallCords;
+        for (int i = 0; i < 21; i++)
+        {
+            for (int j = 0; j < 21; j++)
+            {
+
+                // 게이트 죽이기
+                int &curr = root_map[i][j];
+                if (curr == -4)
+                {
+                    curr = -3;
+                }
+                if (curr == -3)
+                {
+                    emptyWallCords.push_back(i * 21 + j);
+                }
+            }
+        }
+        int index = rand() % emptyWallCords.size();
+        int value = emptyWallCords[index];
+        root_map[value / 21][value % 21] = -4;
+
+        int newIndex = rand() % emptyWallCords.size();
+        while (newIndex == index) // 좌표중복방지
+        {
+            newIndex = rand() % emptyWallCords.size();
+        }
+        value = emptyWallCords[newIndex];
+        root_map[value / 21][value % 21] = -4;
+    }
 }
 
 void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
@@ -138,6 +182,10 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
     {
         root_map[head_Y][head_X] = current_snack_length++;
         root_map[next_Y][next_X] = -1;
+        if (is_snake_passing_gate_flag > 0) // 중간에 길이 변화 시 추적 기능
+        {
+            is_snake_passing_gate_flag++;
+        }
         growth_item_count++;
         max_snack_length = (max_snack_length < current_snack_length) ? current_snack_length : max_snack_length;
         for (int i = 0; i < 21; i++)
@@ -158,6 +206,10 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
         posion_item_count++;
         root_map[head_Y][head_X] = current_snack_length--;
         root_map[next_Y][next_X] = -1;
+        if (is_snake_passing_gate_flag > 0) // 중간에 길이 변화 시 추적 기능
+        {
+            is_snake_passing_gate_flag--;
+        }
         for (int i = 0; i < 21; i++)
         {
             for (int j = 0; j < 21; j++)
@@ -174,12 +226,13 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
     else if (root_map[next_Y][next_X] == -4)
     {
         gate_passed_count++;
+        is_snake_passing_gate_flag = current_snack_length;
         for (int k = 0; k < 21 * 21; k++)
         {
             int i = k / 21;
             int j = k % 21;
-            int &curr = root_map[i][j];
-            if (curr == -4 && next_Y != i && next_X != j)
+            int curr = root_map[i][j];
+            if (curr == -4 && (next_Y != i || next_X != j))
             {
                 next_Y = i;
                 next_X = j;
@@ -323,5 +376,9 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
                 return;
             }
         }
+    }
+    else
+    { // 이동 불가능한 곳으로 이동하려 했으므로 게임 오버
+        game_over_flag = true;
     }
 }

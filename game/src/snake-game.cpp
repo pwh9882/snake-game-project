@@ -73,6 +73,7 @@ int main()
             if (thick_count > FPS_SET)
             {
                 stageManager.item_spawn_cooltime_counter++;
+                stageManager.gate_spawn_cooltime_counter++;
                 thick_count = 1;
             }
         }
