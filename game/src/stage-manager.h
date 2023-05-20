@@ -41,6 +41,7 @@ public:
     int gate_spawn_cooltime_counter;
 
     int current_game_speed;
+    int current_game_elapsed_time;
 
     bool game_over_flag;
 

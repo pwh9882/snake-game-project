@@ -29,12 +29,12 @@ void RenderManager::initWindows(WINDOW *stdscr)
     attron(COLOR_PAIR(3));
     wbkgd(debug_window, COLOR_PAIR(3));
 
-    score_window = subwin(stdscr, 5, 25, 7, 25);
+    score_window = subwin(stdscr, 6, 25, 7, 25);
     init_pair(4, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
     attron(COLOR_PAIR(4));
     wbkgd(score_window, COLOR_PAIR(4));
 
-    goal_window = subwin(stdscr, 5, 25, 13, 25);
+    goal_window = subwin(stdscr, 5, 25, 14, 25);
     init_pair(5, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
     attron(COLOR_PAIR(5));
     wbkgd(goal_window, COLOR_PAIR(5));
@@ -97,6 +97,7 @@ void RenderManager::renderGameScreen()
 void RenderManager::renderScoreScreen()
 {
     // wprintw(score_window, "score_window_preview\n");
+    wprintw(score_window, "Elapsed Time: %d\n", stageManager.current_game_elapsed_time);
     wprintw(score_window, "Current Length: %d\n", stageManager.current_snack_length);
     wprintw(score_window, "Max Length: %d\n", stageManager.max_snack_length);
     wprintw(score_window, "Growth Earned: %d\n", stageManager.growth_item_count);

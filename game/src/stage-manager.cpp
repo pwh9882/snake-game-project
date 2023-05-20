@@ -24,6 +24,7 @@ void StageManager::initStage()
     current_snack_length = start_snack_length;
     max_snack_length = current_snack_length;
     current_game_speed = 2;
+    current_game_elapsed_time = 0;
 
     growth_item_count = 0;
     posion_item_count = 0;

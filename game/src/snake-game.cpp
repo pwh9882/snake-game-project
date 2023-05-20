@@ -74,6 +74,7 @@ int main()
             {
                 stageManager.item_spawn_cooltime_counter++;
                 stageManager.gate_spawn_cooltime_counter++;
+                stageManager.current_game_elapsed_time++;
                 thick_count = 1;
             }
         }
