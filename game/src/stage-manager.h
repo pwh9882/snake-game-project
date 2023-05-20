@@ -119,6 +119,7 @@ public:
     int current_game_elapsed_time;
 
     bool game_over_flag;
+    bool stage_complete_flag;
 
     StageManager();
     void initStage(int stage_index);

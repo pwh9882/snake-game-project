@@ -31,7 +31,7 @@ void StageManager::initStage(int stage_index)
 
     growth_item_goal = 5;
     posion_item_goal = 2;
-    gate_pass_goal = 3;
+    gate_pass_goal = 1;
 
     item_spawn_cooltime = 5;
     item_spawn_cooltime_counter = 0;
@@ -40,6 +40,7 @@ void StageManager::initStage(int stage_index)
     gate_spawn_cooltime_counter = 0;
 
     game_over_flag = false;
+    stage_complete_flag = false;
     for (int i = 0; i < 21; i++)
     {
         for (int j = 0; j < 21; j++)

@@ -49,12 +49,17 @@ void startGame(int stage_index)
 
             if (thick_count % (FPS_SET / stageManager.current_game_speed) == 0)
             {
-                if (inputManager.recent_user_input == 'q' || stageManager.game_over_flag)
+                // update game
+                stageManager.updateGame();
+
+                if (stageManager.gate_passed_count == stageManager.gate_pass_goal)
+                {
+                    stageManager.stage_complete_flag = true;
+                }
+                if (inputManager.recent_user_input == 'q' || stageManager.game_over_flag || stageManager.stage_complete_flag)
                 {
                     break;
                 }
-                // update game
-                stageManager.updateGame();
 
                 // render screen
                 clear();
@@ -96,28 +101,46 @@ int main()
     while (true)
     {
         string user_input = "";
-        cout << "게임을 시작하려면 1~4번(stage) 입력: 종료는 5번";
-        cin >> user_input;
-        if (user_input == "1")
+        if (stageManager.stage_complete_flag == true && stage_index < 3)
         {
-            startGame(stage_index);
+
+            cout << "다음스테이지로 가고 싶으면 y를 입력, 종료하고 싶으면 q를 입력:\n";
+            cin >> user_input;
+            if (user_input == "y")
+            {
+                startGame(++stage_index);
+            }
+            else if (user_input == "q")
+            {
+                cout << "게임 종료됨.\n";
+                break;
+            }
         }
-        else if (user_input == "2")
+        else
         {
-            startGame(1);
-        }
-        else if (user_input == "3")
-        {
-            startGame(2);
-        }
-        else if (user_input == "4")
-        {
-            startGame(3);
-        }
-        else if (user_input == "5")
-        {
-            cout << "게임 종료됨.";
-            break;
+            cout << "게임을 시작하려면 1~4번(stage) 입력: 종료는 q\n";
+            cin >> user_input;
+            if (user_input == "1")
+            {
+                startGame(stage_index);
+            }
+            else if (user_input == "2")
+            {
+                startGame(1);
+            }
+            else if (user_input == "3")
+            {
+                startGame(2);
+            }
+            else if (user_input == "4")
+            {
+                startGame(3);
+            }
+            else if (user_input == "q")
+            {
+                cout << "게임 종료됨.\n";
+                break;
+            }
         }
     }
 
