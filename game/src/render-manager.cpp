@@ -49,23 +49,32 @@ void RenderManager::renderScreen()
 }
 
 void RenderManager::renderGameScreen()
-{
+{  
+    init_pair(10, COLOR_WHITE, COLOR_GREEN);
+    init_pair(11, COLOR_WHITE, COLOR_RED);
+    init_pair(12, COLOR_WHITE, COLOR_MAGENTA);
+    init_pair(13, COLOR_WHITE, COLOR_YELLOW);
+
     for (int i = 0; i < 21; i++)
     {
         for (int j = 0; j < 21; j++)
-        {
+        {          
             int curr = stageManager.root_map[i][j];
             if (curr > 0)
             {
-                wprintw(game_window, "@");
+                wattron(game_window, A_BLINK | A_BOLD | COLOR_PAIR(13));
+                waddch(game_window, ' ');
+                wattroff(game_window, A_BLINK | A_BOLD | COLOR_PAIR(13));
             }
             else if (curr == 0)
             {
                 wprintw(game_window, " ");
             }
             else if (curr == -1)
-            {
-                waddch(game_window, ACS_DIAMOND);
+            {   
+                wattron(game_window, A_BOLD | COLOR_PAIR(13));
+                waddch(game_window, 'H');
+                wattroff(game_window, A_BOLD | COLOR_PAIR(13));
             }
             else if (curr == -2)
             {
@@ -76,18 +85,22 @@ void RenderManager::renderGameScreen()
                 waddch(game_window, ACS_CKBOARD);
             }
             else if (curr == -4)
-            {
-                wprintw(game_window, "O");
+            {   
+                wattron(game_window, A_BOLD | COLOR_PAIR(12));
+                waddch(game_window, 'G');
+                wattroff(game_window, A_BOLD | COLOR_PAIR(12));
             }
             else if (curr == -15)
             {
-                wattron(game_window, A_BLINK | A_BOLD);
-                waddch(game_window, '*');
-                wattroff(game_window, A_BLINK | A_BOLD);
+                wattron(game_window, A_BLINK | A_BOLD | COLOR_PAIR(10));
+                waddch(game_window, 'A');
+                wattroff(game_window, A_BLINK | A_BOLD | COLOR_PAIR(10));
             }
             else if (curr == -25)
-            {
-                wprintw(game_window, "x");
+            {   
+                wattron(game_window, A_BLINK | A_BOLD | COLOR_PAIR(11));
+                waddch(game_window, 'P');
+                wattroff(game_window, A_BLINK | A_BOLD | COLOR_PAIR(11));
             }
         }
         wprintw(game_window, "\n");
