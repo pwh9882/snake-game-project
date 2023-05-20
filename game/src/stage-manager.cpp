@@ -41,6 +41,13 @@ void StageManager::initStage()
     gate_spawn_cooltime_counter = 0;
 
     game_over_flag = false;
+    for (int i = 0; i < 21; i++)
+    {
+        for (int j = 0; j < 21; j++)
+        {
+            root_map[i][j] = stage_one[i][j];
+        }
+    }
 }
 void StageManager::updateGame()
 {

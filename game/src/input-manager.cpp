@@ -10,7 +10,8 @@ void InputManager::handleInput()
     if (newVal != ERR && (newVal == KEY_LEFT ||
                           newVal == KEY_RIGHT ||
                           newVal == KEY_UP ||
-                          newVal == KEY_DOWN))
+                          newVal == KEY_DOWN) ||
+        newVal == 'q')
     {
         recent_user_input = newVal;
     }
