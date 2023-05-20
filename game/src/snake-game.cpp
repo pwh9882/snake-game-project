@@ -95,14 +95,14 @@ int main()
 
     while (true)
     {
-        int user_input = -1;
+        string user_input = "";
         cout << "게임을 시작하려면 1번 입력: 종료는 2번";
         cin >> user_input;
-        if (user_input == 1)
+        if (user_input == "1")
         {
             startGame();
         }
-        else if (user_input == 2)
+        else if (user_input == "2")
         {
             cout << "게임 종료됨.";
             break;
