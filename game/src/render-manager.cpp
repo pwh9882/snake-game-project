@@ -49,7 +49,7 @@ void RenderManager::renderScreen()
 }
 
 void RenderManager::renderGameScreen()
-{  
+{
     init_pair(10, COLOR_WHITE, COLOR_GREEN);
     init_pair(11, COLOR_WHITE, COLOR_RED);
     init_pair(12, COLOR_WHITE, COLOR_MAGENTA);
@@ -58,7 +58,7 @@ void RenderManager::renderGameScreen()
     for (int i = 0; i < 21; i++)
     {
         for (int j = 0; j < 21; j++)
-        {          
+        {
             int curr = stageManager.root_map[i][j];
             if (curr > 0)
             {
@@ -71,7 +71,7 @@ void RenderManager::renderGameScreen()
                 wprintw(game_window, " ");
             }
             else if (curr == -1)
-            {   
+            {
                 wattron(game_window, A_BOLD | COLOR_PAIR(13));
                 waddch(game_window, 'H');
                 wattroff(game_window, A_BOLD | COLOR_PAIR(13));
@@ -85,7 +85,7 @@ void RenderManager::renderGameScreen()
                 waddch(game_window, ACS_CKBOARD);
             }
             else if (curr == -4)
-            {   
+            {
                 wattron(game_window, A_BOLD | COLOR_PAIR(12));
                 waddch(game_window, 'G');
                 wattroff(game_window, A_BOLD | COLOR_PAIR(12));
@@ -97,7 +97,7 @@ void RenderManager::renderGameScreen()
                 wattroff(game_window, A_BLINK | A_BOLD | COLOR_PAIR(10));
             }
             else if (curr == -25)
-            {   
+            {
                 wattron(game_window, A_BLINK | A_BOLD | COLOR_PAIR(11));
                 waddch(game_window, 'P');
                 wattroff(game_window, A_BLINK | A_BOLD | COLOR_PAIR(11));
@@ -119,7 +119,12 @@ void RenderManager::renderScoreScreen()
 }
 void RenderManager::renderGoalScreen()
 {
-    wprintw(goal_window, "goal_window_preview");
+    attron(A_BOLD);
+    wprintw(goal_window, "Mission \n");
+    wprintw(goal_window, "Earn Growth: (%d / %d)\n", stageManager.growth_item_count, stageManager.growth_item_goal);
+    wprintw(goal_window, "Earn Posion: (%d / %d)\n", stageManager.posion_item_count, stageManager.posion_item_goal);
+    wprintw(goal_window, "pass Gate: (%d / %d)\n", stageManager.gate_passed_count, stageManager.gate_pass_goal);
+    attroff(A_BOLD);
 }
 
 void RenderManager::renderDebugScreen()

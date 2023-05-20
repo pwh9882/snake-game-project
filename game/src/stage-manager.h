@@ -32,10 +32,15 @@ public:
 
     int growth_item_count;
     int posion_item_count;
+    int gate_passed_count;
+
+    int growth_item_goal;
+    int posion_item_goal;
+    int gate_pass_goal;
+
     int item_spawn_cooltime;
     int item_spawn_cooltime_counter;
 
-    int gate_passed_count;
     int is_snake_passing_gate_flag = 0;
     int gate_spawn_cooltime;
     int gate_spawn_cooltime_counter;
