@@ -65,19 +65,19 @@ void RenderManager::renderScreen()
             }
             else if (curr == 0)
             {
-                wprintw(game_window, ".");
+                wprintw(game_window, " ");
             }
             else if (curr == -1)
             {
-                wprintw(game_window, "&");
+                waddch(game_window, ACS_DIAMOND);
             }
             else if (curr == -2)
             {
-                wprintw(game_window, "#");
+                waddch(game_window, char (219));
             }
             else if (curr == -3)
             {
-                wprintw(game_window, "=");
+                waddch(game_window, ACS_CKBOARD);
             }
             else if (curr == -4)
             {
@@ -85,11 +85,13 @@ void RenderManager::renderScreen()
             }
             else if (curr == -15)
             {
-                wprintw(game_window, "*");
+                wattron(game_window, A_BLINK | A_BOLD); 
+                waddch(game_window, '*');
+                wattroff(game_window, A_BLINK | A_BOLD);
             }
             else if (curr == -25)
             {
-                wprintw(game_window, "X");
+                wprintw(game_window, "x");
             }
         }
         wprintw(game_window, "\n");
