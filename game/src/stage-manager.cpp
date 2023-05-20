@@ -17,9 +17,8 @@ Poison -25 ~ -20
 
 StageManager::StageManager()
 {
-    initStage();
 }
-void StageManager::initStage()
+void StageManager::initStage(int stage_index)
 {
     current_snack_length = start_snack_length;
     max_snack_length = current_snack_length;
@@ -45,7 +44,7 @@ void StageManager::initStage()
     {
         for (int j = 0; j < 21; j++)
         {
-            root_map[i][j] = stage_one[i][j];
+            root_map[i][j] = stages[stage_index][i][j];
         }
     }
 }

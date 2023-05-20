@@ -14,7 +14,7 @@ StageManager stageManager;
 InputManager inputManager;
 RenderManager renderManager;
 
-void startGame()
+void startGame(int stage_index)
 {
     initscr();
     start_color();
@@ -31,7 +31,7 @@ void startGame()
     time_point<steady_clock> fpsTimer(steady_clock::now()); // 타이머 시작
     frame FPS{};                                            // 프레임 카운터
     int thick_count = 0;
-    stageManager.initStage();
+    stageManager.initStage(stage_index);
     renderManager.initWindows(stdscr);
     inputManager.recent_user_input = KEY_LEFT;
     while (true)
@@ -92,17 +92,29 @@ void startGame()
 
 int main()
 {
-
+    int stage_index = 0;
     while (true)
     {
         string user_input = "";
-        cout << "게임을 시작하려면 1번 입력: 종료는 2번";
+        cout << "게임을 시작하려면 1~4번(stage) 입력: 종료는 5번";
         cin >> user_input;
         if (user_input == "1")
         {
-            startGame();
+            startGame(stage_index);
         }
         else if (user_input == "2")
+        {
+            startGame(1);
+        }
+        else if (user_input == "3")
+        {
+            startGame(2);
+        }
+        else if (user_input == "4")
+        {
+            startGame(3);
+        }
+        else if (user_input == "5")
         {
             cout << "게임 종료됨.";
             break;
