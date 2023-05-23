@@ -13,6 +13,7 @@ using ms = duration<float, milli>;                  // 밀리초 단위
 StageManager stageManager;
 InputManager inputManager;
 RenderManager renderManager;
+MapManager mapManager;
 
 void startGame(int stage_index)
 {
@@ -58,6 +59,7 @@ void startGame(int stage_index)
                 }
                 if (inputManager.recent_user_input == 'q' || stageManager.game_over_flag || stageManager.stage_complete_flag)
                 {
+                    stageManager.endGame();
                     break;
                 }
 
@@ -98,6 +100,7 @@ void startGame(int stage_index)
 int main()
 {
     int stage_index = 0;
+    // startGame(stage_index);
     while (true)
     {
         string user_input = "";

@@ -3,6 +3,7 @@
 #include <random>
 #include <vector>
 extern InputManager inputManager;
+extern MapManager mapManager;
 
 /*
 nothing: 0
@@ -20,8 +21,7 @@ StageManager::StageManager()
 }
 void StageManager::initStage(int stage_index)
 {
-    current_snack_length = start_snack_length;
-    max_snack_length = current_snack_length;
+
     current_game_speed = 2;
     current_game_elapsed_time = 0;
 
@@ -41,23 +41,41 @@ void StageManager::initStage(int stage_index)
 
     game_over_flag = false;
     stage_complete_flag = false;
-    for (int i = 0; i < 21; i++)
+
+    Map &curr_map = mapManager.maps[stage_index];
+    map_height = curr_map.height;
+    map_width = curr_map.width;
+    stage_map = new int *[map_height];
+    current_snake_length = curr_map.start_snake_length;
+    for (int i = 0; i < map_height; i++)
     {
-        for (int j = 0; j < 21; j++)
+        stage_map[i] = new int[map_width];
+        for (int j = 0; j < map_width; j++)
         {
-            root_map[i][j] = stages[stage_index][i][j];
+            stage_map[i][j] = curr_map.data[i][j];
         }
     }
 }
+
+void StageManager::endGame()
+{
+    for (int i = 0; i < map_height; i++)
+    {
+        delete[] stage_map[i];
+    }
+    delete[] stage_map;
+    stage_map = nullptr;
+}
+
 void StageManager::updateGame()
 {
     int head_Y = 0, head_X = 0;
     // 머리 찾기
-    for (int i = 0; i < 21; i++)
+    for (int i = 0; i < map_height; i++)
     {
-        for (int j = 0; j < 21; j++)
+        for (int j = 0; j < map_width; j++)
         {
-            int curr = root_map[i][j];
+            int curr = stage_map[i][j];
             if (curr == -1)
             {
                 head_Y = i;
@@ -92,11 +110,11 @@ void StageManager::updateGame()
 
     // ======================================
     // 몸통죽이기 & 아이템 죽이기
-    for (int i = 0; i < 21; i++)
+    for (int i = 0; i < map_height; i++)
     {
-        for (int j = 0; j < 21; j++)
+        for (int j = 0; j < map_width; j++)
         {
-            int &curr = root_map[i][j];
+            int &curr = stage_map[i][j];
             if (curr > 0)
             {
                 curr--;
@@ -113,13 +131,13 @@ void StageManager::updateGame()
     {
         item_spawn_cooltime_counter = 0;
         std::vector<int> emptyBlockCords;
-        for (int i = 0; i < 21; i++)
+        for (int i = 0; i < map_height; i++)
         {
-            for (int j = 0; j < 21; j++)
+            for (int j = 0; j < map_width; j++)
             {
 
                 // 아이템 죽이기
-                int &curr = root_map[i][j];
+                int &curr = stage_map[i][j];
                 if (curr >= -15 && curr < -10)
                 {
                     curr = 0;
@@ -131,17 +149,17 @@ void StageManager::updateGame()
 
                 if (curr == 0)
                 {
-                    emptyBlockCords.push_back(i * 21 + j);
+                    emptyBlockCords.push_back(i * map_width + j);
                 }
             }
         }
         int index = rand() % emptyBlockCords.size();
         int value = emptyBlockCords[index];
-        root_map[value / 21][value % 21] = -15;
+        stage_map[value / map_width][value % map_width] = -15;
 
         index = rand() % emptyBlockCords.size();
         value = emptyBlockCords[index];
-        root_map[value / 21][value % 21] = -25;
+        stage_map[value / map_width][value % map_width] = -25;
     }
 
     // 틱마다 gate 생성
@@ -149,26 +167,26 @@ void StageManager::updateGame()
     {
         gate_spawn_cooltime_counter = 0;
         std::vector<int> emptyWallCords;
-        for (int i = 0; i < 21; i++)
+        for (int i = 0; i < map_height; i++)
         {
-            for (int j = 0; j < 21; j++)
+            for (int j = 0; j < map_width; j++)
             {
 
                 // 게이트 죽이기
-                int &curr = root_map[i][j];
+                int &curr = stage_map[i][j];
                 if (curr == -4)
                 {
                     curr = -3;
                 }
                 if (curr == -3)
                 {
-                    emptyWallCords.push_back(i * 21 + j);
+                    emptyWallCords.push_back(i * map_width + j);
                 }
             }
         }
         int index = rand() % emptyWallCords.size();
         int value = emptyWallCords[index];
-        root_map[value / 21][value % 21] = -4;
+        stage_map[value / map_width][value % map_width] = -4;
 
         int newIndex = rand() % emptyWallCords.size();
         while (newIndex == index) // 좌표중복방지
@@ -176,7 +194,7 @@ void StageManager::updateGame()
             newIndex = rand() % emptyWallCords.size();
         }
         value = emptyWallCords[newIndex];
-        root_map[value / 21][value % 21] = -4;
+        stage_map[value / map_width][value % map_width] = -4;
     }
 }
 
@@ -184,66 +202,66 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
 {
     // ======================================
     // 아무것도 없으면 이동
-    if (root_map[next_Y][next_X] == 0)
+    if (stage_map[next_Y][next_X] == 0)
     {
-        root_map[head_Y][head_X] = current_snack_length;
-        root_map[next_Y][next_X] = -1;
+        stage_map[head_Y][head_X] = current_snake_length;
+        stage_map[next_Y][next_X] = -1;
     }
     // 성장아이템 먹으면 길이 + 1
-    else if (root_map[next_Y][next_X] == -15)
+    else if (stage_map[next_Y][next_X] == -15)
     {
-        root_map[head_Y][head_X] = current_snack_length++;
-        root_map[next_Y][next_X] = -1;
+        stage_map[head_Y][head_X] = current_snake_length++;
+        stage_map[next_Y][next_X] = -1;
         if (is_snake_passing_gate_flag > 0) // 중간에 길이 변화 시 추적 기능
         {
             is_snake_passing_gate_flag++;
         }
         growth_item_count++;
-        max_snack_length = (max_snack_length < current_snack_length) ? current_snack_length : max_snack_length;
-        for (int i = 0; i < 21; i++)
+        max_snake_length = (max_snake_length < current_snake_length) ? current_snake_length : max_snake_length;
+        for (int i = 0; i < map_height; i++)
         {
-            for (int j = 0; j < 21; j++)
+            for (int j = 0; j < map_width; j++)
             {
-                int curr = root_map[i][j];
+                int curr = stage_map[i][j];
                 if (curr > 0)
                 {
-                    root_map[i][j]++;
+                    stage_map[i][j]++;
                 }
             }
         }
     }
     // posion 아이템 섭취시 몸톨 길이 -1
-    else if (root_map[next_Y][next_X] == -25)
+    else if (stage_map[next_Y][next_X] == -25)
     {
         posion_item_count++;
-        root_map[head_Y][head_X] = current_snack_length--;
-        root_map[next_Y][next_X] = -1;
+        stage_map[head_Y][head_X] = current_snake_length--;
+        stage_map[next_Y][next_X] = -1;
         if (is_snake_passing_gate_flag > 0) // 중간에 길이 변화 시 추적 기능
         {
             is_snake_passing_gate_flag--;
         }
-        for (int i = 0; i < 21; i++)
+        for (int i = 0; i < map_height; i++)
         {
-            for (int j = 0; j < 21; j++)
+            for (int j = 0; j < map_width; j++)
             {
-                int curr = root_map[i][j];
+                int curr = stage_map[i][j];
                 if (curr > 0)
                 {
-                    root_map[i][j]--;
+                    stage_map[i][j]--;
                 }
             }
         }
     }
     // Gate 통과 시
-    else if (root_map[next_Y][next_X] == -4)
+    else if (stage_map[next_Y][next_X] == -4)
     {
         gate_passed_count++;
-        is_snake_passing_gate_flag = current_snack_length;
-        for (int k = 0; k < 21 * 21; k++)
+        is_snake_passing_gate_flag = current_snake_length;
+        for (int k = 0; k < map_height * map_width; k++)
         {
-            int i = k / 21;
-            int j = k % 21;
-            int curr = root_map[i][j];
+            int i = k / map_width;
+            int j = k % map_width;
+            int curr = stage_map[i][j];
             if (curr == -4 && (next_Y != i || next_X != j))
             {
                 next_Y = i;
@@ -257,33 +275,45 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
         if (inputManager.recent_user_input == KEY_UP)
         {
             // 위 -> 오른 -> 왼 -> 아래 순으로 진출
-            int curr = root_map[next_Y - 1][next_X]; // KEY_UP
-            if ((curr == 0 || curr == -15 || curr == -25) && next_Y - 1 >= 0)
+            if (next_Y - 1 >= 0)
             {
-                inputManager.recent_user_input = KEY_UP;
-                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y - 1][next_X]; // KEY_UP
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_UP;
+                    tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y][next_X + 1]; // KEY_RIGHT
-            if ((curr == 0 || curr == -15 || curr == -25) && next_X + 1 < 21)
+            if (next_X + 1 < map_width)
             {
-                inputManager.recent_user_input = KEY_RIGHT;
-                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y][next_X + 1]; // KEY_RIGHT
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_RIGHT;
+                    tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y][next_X - 1]; // KEY_LEFT
-            if ((curr == 0 || curr == -15 || curr == -25) && next_X - 1 >= 0)
+            if (next_X - 1 >= 0)
             {
-                inputManager.recent_user_input = KEY_LEFT;
-                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y][next_X - 1]; // KEY_LEFT
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_LEFT;
+                    tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y + 1][next_X]; // KEY_DOWN
-            if ((curr == 0 || curr == -15 || curr == -25) && next_Y + 1 < 21)
+            if (next_Y + 1 < map_height)
             {
-                inputManager.recent_user_input = KEY_DOWN;
-                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y + 1][next_X]; // KEY_DOWN
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_DOWN;
+                    tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                    return;
+                }
             }
         }
 
@@ -291,33 +321,45 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
         else if (inputManager.recent_user_input == KEY_DOWN)
         {
             // 아래 -> 왼 -> 위 -> 오른 순으로 진출
-            int curr = root_map[next_Y + 1][next_X]; // KEY_DOWN
-            if ((curr == 0 || curr == -15 || curr == -25) && next_Y + 1 < 21)
+            if (next_Y + 1 < map_height)
             {
-                inputManager.recent_user_input = KEY_DOWN;
-                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y + 1][next_X]; // KEY_DOWN
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_DOWN;
+                    tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y][next_X - 1]; // KEY_LEFT
-            if ((curr == 0 || curr == -15 || curr == -25) && next_X - 1 >= 0)
+            if (next_X - 1 >= 0)
             {
-                inputManager.recent_user_input = KEY_LEFT;
-                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y][next_X - 1]; // KEY_LEFT
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_LEFT;
+                    tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y - 1][next_X]; // KEY_UP
-            if ((curr == 0 || curr == -15 || curr == -25) && next_Y - 1 >= 0)
+            if (next_Y - 1 >= 0)
             {
-                inputManager.recent_user_input = KEY_UP;
-                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y - 1][next_X]; // KEY_UP
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_UP;
+                    tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y][next_X + 1]; // KEY_RIGHT
-            if ((curr == 0 || curr == -15 || curr == -25) && next_X + 1 < 21)
+            if (next_X + 1 < map_width)
             {
-                inputManager.recent_user_input = KEY_RIGHT;
-                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y][next_X + 1]; // KEY_RIGHT
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_RIGHT;
+                    tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                    return;
+                }
             }
         }
 
@@ -325,33 +367,45 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
         else if (inputManager.recent_user_input == KEY_RIGHT)
         {
             // 오른 -> 아래 -> 위 -> 왼 순으로 진출
-            int curr = root_map[next_Y][next_X + 1]; // KEY_RIGHT
-            if ((curr == 0 || curr == -15 || curr == -25) && next_X + 1 < 21)
+            if (next_X + 1 < map_width)
             {
-                inputManager.recent_user_input = KEY_RIGHT;
-                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y][next_X + 1]; // KEY_RIGHT
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_RIGHT;
+                    tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y + 1][next_X]; // KEY_DOWN
-            if ((curr == 0 || curr == -15 || curr == -25) && next_Y + 1 < 21)
+            if (next_Y + 1 < map_height)
             {
-                inputManager.recent_user_input = KEY_DOWN;
-                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y + 1][next_X]; // KEY_DOWN
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_DOWN;
+                    tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y - 1][next_X]; // KEY_UP
-            if ((curr == 0 || curr == -15 || curr == -25) && next_Y - 1 >= 0)
+            if (next_Y - 1 >= 0)
             {
-                inputManager.recent_user_input = KEY_UP;
-                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y - 1][next_X]; // KEY_UP
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_UP;
+                    tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y][next_X - 1]; // KEY_LEFT
-            if ((curr == 0 || curr == -15 || curr == -25) && next_X - 1 >= 0)
+            if (next_X - 1 >= 0)
             {
-                inputManager.recent_user_input = KEY_LEFT;
-                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y][next_X - 1]; // KEY_LEFT
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_LEFT;
+                    tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                    return;
+                }
             }
         }
 
@@ -359,33 +413,45 @@ void StageManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
         else if (inputManager.recent_user_input == KEY_LEFT)
         {
             // 왼 -> 위 -> 아래 -> 위 순으로 진출
-            int curr = root_map[next_Y][next_X - 1]; // KEY_LEFT
-            if ((curr == 0 || curr == -15 || curr == -25) && next_X - 1 >= 0)
+            if (next_X - 1 >= 0)
             {
-                inputManager.recent_user_input = KEY_LEFT;
-                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y][next_X - 1]; // KEY_LEFT
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_LEFT;
+                    tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y - 1][next_X]; // KEY_UP
-            if ((curr == 0 || curr == -15 || curr == -25) && next_Y - 1 >= 0)
+            if (next_Y - 1 >= 0)
             {
-                inputManager.recent_user_input = KEY_UP;
-                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y - 1][next_X]; // KEY_UP
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_UP;
+                    tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y + 1][next_X]; // KEY_DOWN
-            if ((curr == 0 || curr == -15 || curr == -25) && next_Y + 1 < 21)
+            if (next_Y + 1 < map_height)
             {
-                inputManager.recent_user_input = KEY_DOWN;
-                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y + 1][next_X]; // KEY_DOWN
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_DOWN;
+                    tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                    return;
+                }
             }
-            curr = root_map[next_Y][next_X + 1]; // KEY_RIGHT
-            if ((curr == 0 || curr == -15 || curr == -25) && next_X + 1 < 21)
+            if (next_X + 1 < map_width)
             {
-                inputManager.recent_user_input = KEY_RIGHT;
-                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
-                return;
+                int curr = stage_map[next_Y][next_X + 1]; // KEY_RIGHT
+                if ((curr == 0 || curr == -15 || curr == -25))
+                {
+                    inputManager.recent_user_input = KEY_RIGHT;
+                    tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                    return;
+                }
             }
         }
     }
