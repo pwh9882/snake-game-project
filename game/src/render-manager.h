@@ -1,3 +1,6 @@
+#ifndef _RENDER_MANAGER_H_
+#define _RENDER_MANAGER_H_
+
 #include <ncurses.h>
 
 class RenderManager
@@ -15,3 +18,5 @@ public:
     void renderMissionScreen();
     void renderDebugScreen();
 };
+
+#endif

@@ -1,7 +1,7 @@
 #include "mangers.h"
 #include <ncurses.h>
 extern InputManager inputManager;
-extern StageManager stageManager;
+extern GameManager gameManager;
 
 /*
 nothing: 0
@@ -20,22 +20,22 @@ RenderManager::RenderManager()
 void RenderManager::initWindows(WINDOW *stdscr)
 {
 
-    game_window = subwin(stdscr, stageManager.map_height, stageManager.map_width + 1, 1, 1);
+    game_window = subwin(stdscr, gameManager.map_height, gameManager.map_width + 1, 1, 1);
     init_pair(2, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
     attron(COLOR_PAIR(2));
     wbkgd(game_window, COLOR_PAIR(2));
 
-    debug_window = subwin(stdscr, 5, 25, 1, stageManager.map_width + 4);
+    debug_window = subwin(stdscr, 5, 25, 1, gameManager.map_width + 4);
     init_pair(3, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
     attron(COLOR_PAIR(3));
     wbkgd(debug_window, COLOR_PAIR(3));
 
-    score_window = subwin(stdscr, 6, 25, 7, stageManager.map_width + 4);
+    score_window = subwin(stdscr, 6, 25, 7, gameManager.map_width + 4);
     init_pair(4, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
     attron(COLOR_PAIR(4));
     wbkgd(score_window, COLOR_PAIR(4));
 
-    goal_window = subwin(stdscr, 5, 25, 14, stageManager.map_width + 4);
+    goal_window = subwin(stdscr, 5, 25, 14, gameManager.map_width + 4);
     init_pair(5, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
     attron(COLOR_PAIR(5));
     wbkgd(goal_window, COLOR_PAIR(5));
@@ -56,11 +56,11 @@ void RenderManager::renderGameScreen()
     init_pair(12, COLOR_WHITE, COLOR_MAGENTA);
     init_pair(13, COLOR_WHITE, COLOR_YELLOW);
 
-    for (int i = 0; i < stageManager.map_height; i++)
+    for (int i = 0; i < gameManager.map_height; i++)
     {
-        for (int j = 0; j < stageManager.map_width; j++)
+        for (int j = 0; j < gameManager.map_width; j++)
         {
-            int curr = stageManager.stage_map[i][j];
+            int curr = gameManager.game_map[i][j];
             if (curr > 0)
             {
                 wattron(game_window, A_BLINK | A_BOLD | COLOR_PAIR(13));
@@ -111,20 +111,20 @@ void RenderManager::renderGameScreen()
 void RenderManager::renderScoreScreen()
 {
     // wprintw(score_window, "score_window_preview\n");
-    wprintw(score_window, "Elapsed Time: %d\n", stageManager.current_game_elapsed_time);
-    wprintw(score_window, "Current Length: %d\n", stageManager.current_snake_length);
-    wprintw(score_window, "Max Length: %d\n", stageManager.max_snake_length);
-    wprintw(score_window, "Growth Earned: %d\n", stageManager.growth_item_count);
-    wprintw(score_window, "Posion Earned: %d\n", stageManager.posion_item_count);
-    wprintw(score_window, "Gate Passed: %d\n", stageManager.gate_passed_count);
+    wprintw(score_window, "Elapsed Time: %d\n", gameManager.current_game_elapsed_time);
+    wprintw(score_window, "Current Length: %d\n", gameManager.current_snake_length);
+    wprintw(score_window, "Max Length: %d\n", gameManager.max_snake_length);
+    wprintw(score_window, "Growth Earned: %d\n", gameManager.growth_item_count);
+    wprintw(score_window, "Posion Earned: %d\n", gameManager.posion_item_count);
+    wprintw(score_window, "Gate Passed: %d\n", gameManager.gate_passed_count);
 }
 void RenderManager::renderMissionScreen()
 {
     attron(A_BOLD);
     wprintw(goal_window, "Mission \n");
-    wprintw(goal_window, "Earn Growth: (%d / %d)\n", stageManager.growth_item_count, stageManager.growth_item_goal);
-    wprintw(goal_window, "Earn Posion: (%d / %d)\n", stageManager.posion_item_count, stageManager.posion_item_goal);
-    wprintw(goal_window, "pass Gate: (%d / %d)\n", stageManager.gate_passed_count, stageManager.gate_pass_goal);
+    wprintw(goal_window, "Earn Growth: (%d / %d)\n", gameManager.growth_item_count, gameManager.curr_stage->growth_item_goal);
+    wprintw(goal_window, "Earn Posion: (%d / %d)\n", gameManager.posion_item_count, gameManager.curr_stage->posion_item_goal);
+    wprintw(goal_window, "pass Gate: (%d / %d)\n", gameManager.gate_passed_count, gameManager.curr_stage->gate_pass_goal);
     attroff(A_BOLD);
 }
 
@@ -136,10 +136,10 @@ void RenderManager::renderDebugScreen()
         wprintw(debug_window, "The pressed key is ");
         attron(A_BOLD);
         wprintw(debug_window, "%c\n", inputManager.recent_user_input);
-        wprintw(debug_window, "item cooltime: %d\n", stageManager.item_spawn_cooltime_counter);
-        wprintw(debug_window, "game_over_flag: %d\n", stageManager.game_over_flag);
-        wprintw(debug_window, "gate cooltime: %d\n", stageManager.gate_spawn_cooltime_counter);
-        wprintw(debug_window, "passing flag: %d\n", stageManager.is_snake_passing_gate_flag);
+        wprintw(debug_window, "item cooltime: %d\n", gameManager.item_spawn_cooltime_counter);
+        wprintw(debug_window, "game_over_flag: %d\n", gameManager.game_over_flag);
+        wprintw(debug_window, "gate cooltime: %d\n", gameManager.gate_spawn_cooltime_counter);
+        wprintw(debug_window, "passing flag: %d\n", gameManager.is_snake_passing_gate_flag);
         attroff(A_BOLD);
     }
 }

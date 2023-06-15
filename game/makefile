@@ -3,7 +3,7 @@ CC = g++
 CPPFLAGS = -g -lncurses -std=c++14 
 
 TARGET = snake-game #실행 파일의 이름
-OBJS = src/input-manager.o src/render-manager.o src/stage-manager.o src/snake-game.o src/map-manager.o
+OBJS = src/input-manager.o src/render-manager.o src/stage-manager.o src/snake-game.o src/game-manager.o
 
 
 $(TARGET) : $(OBJS)

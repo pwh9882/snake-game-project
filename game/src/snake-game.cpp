@@ -10,10 +10,10 @@ const int FPS_SET = 60;                             // 기본 출력 fps 설정
 using frame = duration<int32_t, ratio<1, FPS_SET>>; // FPS_SET fps를 위한 시간 단위
 using ms = duration<float, milli>;                  // 밀리초 단위
 
-StageManager stageManager;
+GameManager gameManager;
 InputManager inputManager;
 RenderManager renderManager;
-MapManager mapManager;
+StageManager stageManager;
 
 void startGame(int stage_index)
 {
@@ -32,7 +32,7 @@ void startGame(int stage_index)
     time_point<steady_clock> fpsTimer(steady_clock::now()); // 타이머 시작
     frame FPS{};                                            // 프레임 카운터
     int thick_count = 0;
-    stageManager.initStage(stage_index);
+    gameManager.initGame(stage_index);
     renderManager.initWindows(stdscr);
     inputManager.recent_user_input = KEY_LEFT;
     while (true)
@@ -48,18 +48,18 @@ void startGame(int stage_index)
 
             thick_count++;
 
-            if (thick_count % (FPS_SET / stageManager.current_game_speed) == 0)
+            if (thick_count % (FPS_SET / gameManager.current_game_speed) == 0)
             {
                 // update game
-                stageManager.updateGame();
+                gameManager.updateGame();
 
-                if (stageManager.gate_passed_count == stageManager.gate_pass_goal)
+                if (gameManager.gate_passed_count == gameManager.curr_stage->gate_pass_goal)
                 {
-                    stageManager.stage_complete_flag = true;
+                    gameManager.game_complete_flag = true;
                 }
-                if (inputManager.recent_user_input == 'q' || stageManager.game_over_flag || stageManager.stage_complete_flag)
+                if (inputManager.recent_user_input == 'q' || gameManager.game_over_flag || gameManager.game_complete_flag)
                 {
-                    stageManager.endGame();
+                    gameManager.endGame();
                     break;
                 }
 
@@ -82,10 +82,14 @@ void startGame(int stage_index)
 
             if (thick_count > FPS_SET)
             {
-                stageManager.item_spawn_cooltime_counter++;
-                stageManager.gate_spawn_cooltime_counter++;
-                stageManager.current_game_elapsed_time++;
+                gameManager.item_spawn_cooltime_counter++;
+                gameManager.gate_spawn_cooltime_counter++;
+                gameManager.current_game_elapsed_time++;
                 thick_count = 1;
+                if (gameManager.current_game_elapsed_time % 10 == 0)
+                {
+                    gameManager.current_game_speed++;
+                }
             }
         }
     }
@@ -104,7 +108,7 @@ int main()
     while (true)
     {
         string user_input = "";
-        if (stageManager.stage_complete_flag == true && stage_index < 3)
+        if (gameManager.game_complete_flag == true && stage_index < 3)
         {
 
             cout << "다음스테이지로 가고 싶으면 y를 입력, 종료하고 싶으면 q를 입력:\n";

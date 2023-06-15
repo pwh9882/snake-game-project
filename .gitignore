@@ -8,4 +8,6 @@ game/src/input-manager.o
 game/src/render-manager.o
 game/src/snake-game.o
 game/src/stage-manager.o
-game/src/map-manager.o
+game/src/game-manager.o
+
+docs/~$*
