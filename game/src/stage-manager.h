@@ -34,7 +34,7 @@ public:
     void setStageConfigs()
     {
         start_snake_length = 4;
-        start_snake_speed = 2;
+        start_snake_speed = 1;
         growth_item_goal = 5;
         posion_item_goal = 5;
         gate_pass_goal = 3;

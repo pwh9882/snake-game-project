@@ -12,8 +12,9 @@ snack_body:1~INT_MAX;
 Immune Wall -2
 Wall -3
 Gate -4
-Growth -15 ~ -10
-Poison -25 ~ -20
+Growth -15
+Poison -25
+Reverse -35
 */
 
 GameManager::GameManager()
@@ -132,6 +133,10 @@ void GameManager::updateGame()
                 {
                     curr = 0;
                 }
+                else if (curr == -35)
+                {
+                    curr = 0;
+                }
 
                 if (curr == 0)
                 {
@@ -146,7 +151,13 @@ void GameManager::updateGame()
 
         index = rand() % emptyBlockCords.size();
         value = emptyBlockCords[index];
+        emptyBlockCords.erase(emptyBlockCords.begin() + index); // 중복 방지를 위한 pop
         current_game_map[value / map_width][value % map_width] = -25;
+
+        index = rand() % emptyBlockCords.size();
+        value = emptyBlockCords[index];
+        // emptyBlockCords.erase(emptyBlockCords.begin() + index); // 중복 방지를 위한 pop
+        current_game_map[value / map_width][value % map_width] = -35;
     }
 
     // 틱마다 gate 생성, gate 통과중일 시 무시
@@ -236,6 +247,57 @@ void GameManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
             }
         }
     }
+
+    // Reverse Item 획득: 머리와 꼬리의 위치 교환
+    // -1 4 3 2 1  || length 4 => 2 3 4 -1 => 1 2 3 -1
+    else if (current_game_map[next_Y][next_X] == -35)
+    {
+        current_game_map[head_Y][head_X] = current_snake_length;
+        current_game_map[next_Y][next_X] = -1;
+
+        bool rev_flag = true;
+        int dy = 0, dx = 0;
+        for (int i = 0; i < map_height; i++)
+        {
+            for (int j = 0; j < map_width; j++)
+            {
+                int &curr = current_game_map[i][j];
+                if (curr == 2 && rev_flag)
+                {
+                    rev_flag = false;
+                    curr = -1;
+                    dy += i;
+                    dx += j;
+                    current_game_map[next_Y][next_X] = 2;
+                }
+                if (curr > 2)
+                {
+                    curr = current_snake_length - curr + 3;
+                }
+            }
+        }
+        for (int i = 0; i < map_height; i++)
+        {
+            for (int j = 0; j < map_width; j++)
+            {
+                int &curr = current_game_map[i][j];
+                if (curr == current_snake_length)
+                {
+                    dy -= i;
+                    dx -= j;
+                    if (dy == 1)
+                        inputManager.recent_user_input = KEY_DOWN;
+                    else if (dy == -1)
+                        inputManager.recent_user_input = KEY_UP;
+                    else if (dx == 1)
+                        inputManager.recent_user_input = KEY_RIGHT;
+                    else if (dx == -1)
+                        inputManager.recent_user_input = KEY_LEFT;
+                }
+            }
+        }
+    }
+
     // Gate 통과 시
     else if (current_game_map[next_Y][next_X] == -4)
     {

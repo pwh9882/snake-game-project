@@ -12,7 +12,7 @@ public:
     WINDOW *debug_window;
     RenderManager();
     void initWindows(WINDOW *stdscr);
-    void renderScreen();
+    void renderScreen(int thick_count);
     void renderGameScreen();
     void renderScoreScreen();
     void renderMissionScreen();

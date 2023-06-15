@@ -41,12 +41,25 @@ void RenderManager::initWindows(WINDOW *stdscr)
     wbkgd(goal_window, COLOR_PAIR(5));
 }
 
-void RenderManager::renderScreen()
+void RenderManager::renderScreen(int thick_count)
 {
+    clear();
+    wclear(game_window);
+    wclear(debug_window);
+    wclear(score_window);
+    wclear(goal_window);
+
+    wprintw(stdscr, "%d\n", thick_count);
     renderGameScreen();
     renderDebugScreen();
     renderScoreScreen();
     renderMissionScreen();
+
+    refresh();
+    wrefresh(game_window);
+    wrefresh(debug_window);
+    wrefresh(score_window);
+    wrefresh(goal_window);
 }
 
 void RenderManager::renderGameScreen()
@@ -55,6 +68,7 @@ void RenderManager::renderGameScreen()
     init_pair(11, COLOR_WHITE, COLOR_RED);
     init_pair(12, COLOR_WHITE, COLOR_MAGENTA);
     init_pair(13, COLOR_WHITE, COLOR_YELLOW);
+    init_pair(14, COLOR_WHITE, COLOR_CYAN);
 
     for (int i = 0; i < gameManager.map_height; i++)
     {
@@ -102,6 +116,12 @@ void RenderManager::renderGameScreen()
                 wattron(game_window, A_BLINK | A_BOLD | COLOR_PAIR(11));
                 waddch(game_window, 'P');
                 wattroff(game_window, A_BLINK | A_BOLD | COLOR_PAIR(11));
+            }
+            else if (curr == -35)
+            {
+                wattron(game_window, A_BLINK | A_BOLD | COLOR_PAIR(14));
+                waddch(game_window, 'R');
+                wattroff(game_window, A_BLINK | A_BOLD | COLOR_PAIR(14));
             }
         }
         wprintw(game_window, "\n");

@@ -44,7 +44,8 @@ void startGame(int stage_index)
         if (FPS.count() >= 1)                                       // 1프레임 이상 지났으면
         {
             fpsTimer = steady_clock::now(); // 타이머 재설정
-                                            // cout << "LastFrame: " << duration_cast<ms>(FPS).count() << "ms | FPS: " << FPS.count() * FPS_SET << endl; // 프레임 정보 출력
+
+            // cout << "LastFrame: " << duration_cast<ms>(FPS).count() << "ms | FPS: " << FPS.count() * FPS_SET << endl; // 프레임 정보 출력
 
             thick_count++;
 
@@ -64,20 +65,7 @@ void startGame(int stage_index)
                 }
 
                 // render screen
-                clear();
-                wclear(renderManager.game_window);
-                wclear(renderManager.debug_window);
-                wclear(renderManager.score_window);
-                wclear(renderManager.goal_window);
-
-                wprintw(stdscr, "%d\n", thick_count);
-                renderManager.renderScreen();
-
-                refresh();
-                wrefresh(renderManager.game_window);
-                wrefresh(renderManager.debug_window);
-                wrefresh(renderManager.score_window);
-                wrefresh(renderManager.goal_window);
+                renderManager.renderScreen(thick_count);
             }
 
             if (thick_count > FPS_SET)
