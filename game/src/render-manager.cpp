@@ -60,7 +60,7 @@ void RenderManager::renderGameScreen()
     {
         for (int j = 0; j < gameManager.map_width; j++)
         {
-            int curr = gameManager.game_map[i][j];
+            int curr = gameManager.current_game_map[i][j];
             if (curr > 0)
             {
                 wattron(game_window, A_BLINK | A_BOLD | COLOR_PAIR(13));
@@ -113,7 +113,7 @@ void RenderManager::renderScoreScreen()
     // wprintw(score_window, "score_window_preview\n");
     wprintw(score_window, "Elapsed Time: %d\n", gameManager.current_game_elapsed_time);
     wprintw(score_window, "Current Length: %d\n", gameManager.current_snake_length);
-    wprintw(score_window, "Max Length: %d\n", gameManager.max_snake_length);
+    wprintw(score_window, "Max Length: %d\n", gameManager.top_snake_length);
     wprintw(score_window, "Growth Earned: %d\n", gameManager.growth_item_count);
     wprintw(score_window, "Posion Earned: %d\n", gameManager.posion_item_count);
     wprintw(score_window, "Gate Passed: %d\n", gameManager.gate_passed_count);
@@ -139,7 +139,7 @@ void RenderManager::renderDebugScreen()
         wprintw(debug_window, "item cooltime: %d\n", gameManager.item_spawn_cooltime_counter);
         wprintw(debug_window, "game_over_flag: %d\n", gameManager.game_over_flag);
         wprintw(debug_window, "gate cooltime: %d\n", gameManager.gate_spawn_cooltime_counter);
-        wprintw(debug_window, "passing flag: %d\n", gameManager.is_snake_passing_gate_flag);
+        wprintw(debug_window, "passing flag: %d\n", gameManager.gate_passing_required_count);
         attroff(A_BOLD);
     }
 }
