@@ -56,7 +56,7 @@ void startGame(int stage_index)
                 gameManager.calcTotalScore();
 
                 if (
-                    gameManager.current_snake_length >= gameManager.curr_stage->snack_length_goal &&
+                    gameManager.current_snake_length >= gameManager.curr_stage->snake_length_goal &&
                     gameManager.growth_item_count >= gameManager.curr_stage->growth_item_goal &&
                     gameManager.posion_item_count >= gameManager.curr_stage->posion_item_goal &&
                     gameManager.gate_passed_count >= gameManager.curr_stage->gate_pass_goal)

@@ -15,7 +15,7 @@ public:
     int start_snake_length;
     int start_snake_speed;
 
-    int snack_length_goal;
+    int snake_length_goal;
     int growth_item_goal;
     int posion_item_goal;
     int gate_pass_goal;
@@ -39,7 +39,7 @@ public:
         start_snake_length = 4;
         start_snake_speed = 1;
 
-        snack_length_goal = 10;
+        snake_length_goal = 10;
         growth_item_goal = 5;
         posion_item_goal = 5;
         gate_pass_goal = 3;

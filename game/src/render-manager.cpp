@@ -5,8 +5,8 @@ extern GameManager gameManager;
 
 /*
 nothing: 0
-snack_head:-1
-snack_body:1~INT_MAX;
+snake_head:-1
+snake_body:1~INT_MAX;
 Immune Wall -2
 Wall -3
 Gate -4
@@ -167,8 +167,8 @@ void RenderManager::renderMissionScreen()
     wprintw(
         goal_window, " B: (%d / %d), (%c)\n",
         gameManager.current_snake_length,
-        gameManager.curr_stage->snack_length_goal,
-        (gameManager.current_snake_length >= gameManager.curr_stage->snack_length_goal ? 'v' : ' '));
+        gameManager.curr_stage->snake_length_goal,
+        (gameManager.current_snake_length >= gameManager.curr_stage->snake_length_goal ? 'v' : ' '));
 
     wprintw(
         goal_window, " +: (%d / %d), (%c)\n",

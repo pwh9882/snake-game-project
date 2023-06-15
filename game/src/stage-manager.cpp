@@ -5,8 +5,8 @@ using namespace std;
 
 /*
 nothing: 0
-snack_head:-1
-snack_body:1~INT_MAX;
+snake_head:-1
+snake_body:1~INT_MAX;
 Immune Wall -2
 Wall -3
 Gate -4
