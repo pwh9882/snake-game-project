@@ -15,6 +15,7 @@ Gate -4
 Growth -15
 Poison -25
 Reverse -35
+high_wall INT_MIN~ -101
 */
 
 GameManager::GameManager()
@@ -42,11 +43,24 @@ void GameManager::initGame(int stage_index)
     game_over_flag = false;
     game_complete_flag = false;
 
+    total_score = 0;
+
     // stage_map 정보 복사
     for (const auto map_row : curr_stage->map)
     {
         current_game_map.push_back(std::vector<int>(map_row.begin(), map_row.end()));
     }
+}
+
+void GameManager::calcTotalScore()
+{
+    total_score =
+        (current_game_elapsed_time +
+         2 * top_snake_length +
+         2 * growth_item_count +
+         2 * posion_item_count +
+         5 * gate_passed_count) *
+        current_game_speed;
 }
 
 void GameManager::endGame()
@@ -230,6 +244,11 @@ void GameManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
     {
         posion_item_count++;
         current_game_map[head_Y][head_X] = current_snake_length--;
+        if (current_snake_length < 3)
+        {
+            game_over_flag = true;
+            return;
+        }
         current_game_map[next_Y][next_X] = -1;
         if (gate_passing_required_count > 0) // 중간에 길이 변화 시 추적 기능
         {
@@ -297,212 +316,415 @@ void GameManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
             }
         }
     }
+    else if (current_game_map[next_Y][next_X] < -100)
+    {
+        moveHeadToHighWall(next_X, next_Y, head_X, head_Y);
+    }
 
     // Gate 통과 시
     else if (current_game_map[next_Y][next_X] == -4)
     {
-        gate_passed_count++;
-        gate_passing_required_count = current_snake_length;
-        for (int k = 0; k < map_height * map_width; k++)
-        {
-            int i = k / map_width;
-            int j = k % map_width;
-            int curr = current_game_map[i][j];
-            if (curr == -4 && (next_Y != i || next_X != j))
-            {
-                next_Y = i;
-                next_X = j;
-                break;
-            }
-        }
-
-        // 출구 정하기
-        // KEY_UP 상태로 들어가기
-        if (inputManager.recent_user_input == KEY_UP)
-        {
-            // 위 -> 오른 -> 왼 -> 아래 순으로 진출
-            if (next_Y - 1 >= 0)
-            {
-                int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_UP;
-                    tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_X + 1 < map_width)
-            {
-                int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_RIGHT;
-                    tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_X - 1 >= 0)
-            {
-                int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_LEFT;
-                    tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_Y + 1 < map_height)
-            {
-                int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_DOWN;
-                    tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
-                    return;
-                }
-            }
-        }
-
-        // KEY_DOWN
-        else if (inputManager.recent_user_input == KEY_DOWN)
-        {
-            // 아래 -> 왼 -> 위 -> 오른 순으로 진출
-            if (next_Y + 1 < map_height)
-            {
-                int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_DOWN;
-                    tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_X - 1 >= 0)
-            {
-                int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_LEFT;
-                    tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_Y - 1 >= 0)
-            {
-                int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_UP;
-                    tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_X + 1 < map_width)
-            {
-                int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_RIGHT;
-                    tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
-                    return;
-                }
-            }
-        }
-
-        // => KEY_RIGHT
-        else if (inputManager.recent_user_input == KEY_RIGHT)
-        {
-            // 오른 -> 아래 -> 위 -> 왼 순으로 진출
-            if (next_X + 1 < map_width)
-            {
-                int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_RIGHT;
-                    tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_Y + 1 < map_height)
-            {
-                int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_DOWN;
-                    tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_Y - 1 >= 0)
-            {
-                int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_UP;
-                    tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_X - 1 >= 0)
-            {
-                int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_LEFT;
-                    tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
-                    return;
-                }
-            }
-        }
-
-        // <= KEY_LEFT
-        else if (inputManager.recent_user_input == KEY_LEFT)
-        {
-            // 왼 -> 위 -> 아래 -> 위 순으로 진출
-            if (next_X - 1 >= 0)
-            {
-                int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_LEFT;
-                    tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_Y - 1 >= 0)
-            {
-                int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_UP;
-                    tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_Y + 1 < map_height)
-            {
-                int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_DOWN;
-                    tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
-                    return;
-                }
-            }
-            if (next_X + 1 < map_width)
-            {
-                int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
-                if ((curr == 0 || curr == -15 || curr == -25))
-                {
-                    inputManager.recent_user_input = KEY_RIGHT;
-                    tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
-                    return;
-                }
-            }
-        }
+        moveHeadToGate(next_X, next_Y, head_X, head_Y);
     }
     else
     { // 이동 불가능한 곳으로 이동하려 했으므로 게임 오버
         game_over_flag = true;
+    }
+}
+
+void GameManager::moveHeadToGate(int next_X, int next_Y, int head_X, int head_Y)
+{
+    gate_passed_count++;
+    gate_passing_required_count = current_snake_length;
+    for (int k = 0; k < map_height * map_width; k++)
+    {
+        int i = k / map_width;
+        int j = k % map_width;
+        int curr = current_game_map[i][j];
+        if (curr == -4 && (next_Y != i || next_X != j))
+        {
+            next_Y = i;
+            next_X = j;
+            break;
+        }
+    }
+
+    // 출구 정하기
+    // KEY_UP 상태로 들어가기
+    if (inputManager.recent_user_input == KEY_UP)
+    {
+        // 위 -> 오른 -> 왼 -> 아래 순으로 진출
+        if (next_Y - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X + 1 < map_width)
+        {
+            int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y + 1 < map_height)
+        {
+            int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+        }
+    }
+
+    // KEY_DOWN
+    else if (inputManager.recent_user_input == KEY_DOWN)
+    {
+        // 아래 -> 왼 -> 위 -> 오른 순으로 진출
+        if (next_Y + 1 < map_height)
+        {
+            int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X + 1 < map_width)
+        {
+            int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+    }
+
+    // => KEY_RIGHT
+    else if (inputManager.recent_user_input == KEY_RIGHT)
+    {
+        // 오른 -> 아래 -> 위 -> 왼 순으로 진출
+        if (next_X + 1 < map_width)
+        {
+            int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y + 1 < map_height)
+        {
+            int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+    }
+
+    // <= KEY_LEFT
+    else if (inputManager.recent_user_input == KEY_LEFT)
+    {
+        // 왼 -> 위 -> 아래 -> 위 순으로 진출
+        if (next_X - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y + 1 < map_height)
+        {
+            int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X + 1 < map_width)
+        {
+            int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+    }
+}
+
+void GameManager::moveHeadToHighWall(int next_X, int next_Y, int head_X, int head_Y)
+{
+    if (-100 - current_game_map[next_Y][next_X] > current_snake_length)
+    {
+        // 통과할 수 없는 높은 벽
+        game_over_flag = true;
+        return;
+    }
+    // 출구 정하기
+    // KEY_UP 상태로 들어가기
+    if (inputManager.recent_user_input == KEY_UP)
+    {
+        // 위 -> 오른 -> 왼 -> 아래 순으로 진출
+        if (next_Y - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X + 1 < map_width)
+        {
+            int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y + 1 < map_height)
+        {
+            int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+        }
+    }
+
+    // KEY_DOWN
+    else if (inputManager.recent_user_input == KEY_DOWN)
+    {
+        // 아래 -> 왼 -> 위 -> 오른 순으로 진출
+        if (next_Y + 1 < map_height)
+        {
+            int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X + 1 < map_width)
+        {
+            int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+    }
+
+    // => KEY_RIGHT
+    else if (inputManager.recent_user_input == KEY_RIGHT)
+    {
+        // 오른 -> 아래 -> 위 -> 왼 순으로 진출
+        if (next_X + 1 < map_width)
+        {
+            int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y + 1 < map_height)
+        {
+            int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+    }
+
+    // <= KEY_LEFT
+    else if (inputManager.recent_user_input == KEY_LEFT)
+    {
+        // 왼 -> 위 -> 아래 -> 위 순으로 진출
+        if (next_X - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y][next_X - 1]; // KEY_LEFT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_LEFT;
+                tryMoveHeadTo(next_X - 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y - 1 >= 0)
+        {
+            int curr = current_game_map[next_Y - 1][next_X]; // KEY_UP
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_UP;
+                tryMoveHeadTo(next_X, next_Y - 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_Y + 1 < map_height)
+        {
+            int curr = current_game_map[next_Y + 1][next_X]; // KEY_DOWN
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_DOWN;
+                tryMoveHeadTo(next_X, next_Y + 1, head_X, head_Y);
+                return;
+            }
+        }
+        if (next_X + 1 < map_width)
+        {
+            int curr = current_game_map[next_Y][next_X + 1]; // KEY_RIGHT
+            if ((curr == 0 || curr == -15 || curr == -25 || curr == -35))
+            {
+                inputManager.recent_user_input = KEY_RIGHT;
+                tryMoveHeadTo(next_X + 1, next_Y, head_X, head_Y);
+                return;
+            }
+        }
     }
 }

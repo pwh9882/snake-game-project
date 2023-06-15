@@ -27,11 +27,21 @@ public:
     bool game_over_flag;
     bool game_complete_flag;
 
+    unsigned int total_score;
+
     GameManager();
     void initGame(int stage_index);
     void updateGame();
-    void tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y);
+    void calcTotalScore();
     void endGame();
+
+private:
+    void tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y);
+    void moveHeadToGrowth();
+    void moveHeadToPosion();
+    void moveHeadToGate(int next_X, int next_Y, int head_X, int head_Y);
+    void moveHeadToWall();
+    void moveHeadToHighWall(int next_X, int next_Y, int head_X, int head_Y);
 };
 
 #endif

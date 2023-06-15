@@ -25,41 +25,41 @@ void RenderManager::initWindows(WINDOW *stdscr)
     attron(COLOR_PAIR(2));
     wbkgd(game_window, COLOR_PAIR(2));
 
-    debug_window = subwin(stdscr, 5, 25, 1, gameManager.map_width + 4);
-    init_pair(3, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
-    attron(COLOR_PAIR(3));
-    wbkgd(debug_window, COLOR_PAIR(3));
-
-    score_window = subwin(stdscr, 6, 25, 7, gameManager.map_width + 4);
+    score_window = subwin(stdscr, 10, 25, 1, gameManager.map_width + 4);
     init_pair(4, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
     attron(COLOR_PAIR(4));
     wbkgd(score_window, COLOR_PAIR(4));
 
-    goal_window = subwin(stdscr, 5, 25, 14, gameManager.map_width + 4);
+    goal_window = subwin(stdscr, 5, 25, 12, gameManager.map_width + 4);
     init_pair(5, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
     attron(COLOR_PAIR(5));
     wbkgd(goal_window, COLOR_PAIR(5));
+
+    debug_window = subwin(stdscr, 5, 25, 18, gameManager.map_width + 4);
+    init_pair(3, COLOR_BLACK, COLOR_WHITE); // 윈도우 백그라운드 컬러 box(win, 0, 0);
+    attron(COLOR_PAIR(3));
+    wbkgd(debug_window, COLOR_PAIR(3));
 }
 
 void RenderManager::renderScreen(int thick_count)
 {
     clear();
     wclear(game_window);
-    wclear(debug_window);
     wclear(score_window);
     wclear(goal_window);
+    wclear(debug_window);
 
     wprintw(stdscr, "%d\n", thick_count);
     renderGameScreen();
-    renderDebugScreen();
     renderScoreScreen();
     renderMissionScreen();
+    renderDebugScreen();
 
     refresh();
     wrefresh(game_window);
-    wrefresh(debug_window);
     wrefresh(score_window);
     wrefresh(goal_window);
+    wrefresh(debug_window);
 }
 
 void RenderManager::renderGameScreen()
@@ -123,29 +123,13 @@ void RenderManager::renderGameScreen()
                 waddch(game_window, 'R');
                 wattroff(game_window, A_BLINK | A_BOLD | COLOR_PAIR(14));
             }
+            else if (curr < -100)
+            {
+                waddch(game_window, -100 - curr + '0');
+            }
         }
         wprintw(game_window, "\n");
     }
-}
-
-void RenderManager::renderScoreScreen()
-{
-    // wprintw(score_window, "score_window_preview\n");
-    wprintw(score_window, "Elapsed Time: %d\n", gameManager.current_game_elapsed_time);
-    wprintw(score_window, "Current Length: %d\n", gameManager.current_snake_length);
-    wprintw(score_window, "Max Length: %d\n", gameManager.top_snake_length);
-    wprintw(score_window, "Growth Earned: %d\n", gameManager.growth_item_count);
-    wprintw(score_window, "Posion Earned: %d\n", gameManager.posion_item_count);
-    wprintw(score_window, "Gate Passed: %d\n", gameManager.gate_passed_count);
-}
-void RenderManager::renderMissionScreen()
-{
-    attron(A_BOLD);
-    wprintw(goal_window, "Mission \n");
-    wprintw(goal_window, "Earn Growth: (%d / %d)\n", gameManager.growth_item_count, gameManager.curr_stage->growth_item_goal);
-    wprintw(goal_window, "Earn Posion: (%d / %d)\n", gameManager.posion_item_count, gameManager.curr_stage->posion_item_goal);
-    wprintw(goal_window, "pass Gate: (%d / %d)\n", gameManager.gate_passed_count, gameManager.curr_stage->gate_pass_goal);
-    attroff(A_BOLD);
 }
 
 void RenderManager::renderDebugScreen()
@@ -162,4 +146,44 @@ void RenderManager::renderDebugScreen()
         wprintw(debug_window, "passing flag: %d\n", gameManager.gate_passing_required_count);
         attroff(A_BOLD);
     }
+}
+
+void RenderManager::renderScoreScreen()
+{
+    wprintw(score_window, " Score Board\n");
+    wprintw(score_window, " Elapsed Time: %d\n", gameManager.current_game_elapsed_time);
+    wprintw(score_window, " Current Length: %d\n", gameManager.current_snake_length);
+    wprintw(score_window, " Max Length: %d\n", gameManager.top_snake_length);
+    wprintw(score_window, " Current Speed: %d\n", gameManager.current_game_speed);
+    wprintw(score_window, " Growth Earned: %d\n", gameManager.growth_item_count);
+    wprintw(score_window, " Posion Earned: %d\n", gameManager.posion_item_count);
+    wprintw(score_window, " Gate Passed: %d\n", gameManager.gate_passed_count);
+    wprintw(score_window, " Total Score: \n %d\n", gameManager.total_score);
+}
+void RenderManager::renderMissionScreen()
+{
+    attron(A_BOLD);
+    wprintw(goal_window, " Mission \n");
+    wprintw(
+        goal_window, " B: (%d / %d), (%c)\n",
+        gameManager.current_snake_length,
+        gameManager.curr_stage->snack_length_goal,
+        (gameManager.current_snake_length >= gameManager.curr_stage->snack_length_goal ? 'v' : ' '));
+
+    wprintw(
+        goal_window, " +: (%d / %d), (%c)\n",
+        gameManager.growth_item_count,
+        gameManager.curr_stage->growth_item_goal,
+        (gameManager.growth_item_count >= gameManager.curr_stage->growth_item_goal ? 'v' : ' '));
+    wprintw(
+        goal_window, " -: (%d / %d), (%c)\n",
+        gameManager.posion_item_count, gameManager.curr_stage->posion_item_goal,
+        gameManager.posion_item_count >= gameManager.curr_stage->posion_item_goal ? 'v' : ' ');
+    wprintw(
+        goal_window, " G: (%d / %d), (%c)\n",
+        gameManager.gate_passed_count, gameManager.curr_stage->gate_pass_goal,
+        gameManager.gate_passed_count >= gameManager.curr_stage->gate_pass_goal ? 'v' : ' '
+
+    );
+    attroff(A_BOLD);
 }

@@ -53,8 +53,13 @@ void startGame(int stage_index)
             {
                 // update game
                 gameManager.updateGame();
+                gameManager.calcTotalScore();
 
-                if (gameManager.gate_passed_count == gameManager.curr_stage->gate_pass_goal)
+                if (
+                    gameManager.current_snake_length >= gameManager.curr_stage->snack_length_goal &&
+                    gameManager.growth_item_count >= gameManager.curr_stage->growth_item_goal &&
+                    gameManager.posion_item_count >= gameManager.curr_stage->posion_item_goal &&
+                    gameManager.gate_passed_count >= gameManager.curr_stage->gate_pass_goal)
                 {
                     gameManager.game_complete_flag = true;
                 }
@@ -99,7 +104,7 @@ int main()
         if (gameManager.game_complete_flag == true && stage_index < 3)
         {
 
-            cout << "다음스테이지로 가고 싶으면 y를 입력, 종료하고 싶으면 q를 입력:\n";
+            cout << "클리어! 다음스테이지로 가고 싶으면 y를 입력 후 엔터, 종료하고 싶으면 q를 입력:\n";
             cin >> user_input;
             if (user_input == "y")
             {
@@ -113,23 +118,23 @@ int main()
         }
         else
         {
-            cout << "게임을 시작하려면 1~4번(stage) 입력: 종료는 q\n";
+            cout << "게임을 시작하려면 1~4번(stage) 입력 후 엔터: 종료는 q\n";
             cin >> user_input;
             if (user_input == "1")
             {
-                startGame(stage_index);
+                startGame(stage_index = 0);
             }
             else if (user_input == "2")
             {
-                startGame(1);
+                startGame(stage_index = 1);
             }
             else if (user_input == "3")
             {
-                startGame(2);
+                startGame(stage_index = 2);
             }
             else if (user_input == "4")
             {
-                startGame(3);
+                startGame(stage_index = 3);
             }
             else if (user_input == "q")
             {
