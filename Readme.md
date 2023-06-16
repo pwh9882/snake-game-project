@@ -30,6 +30,7 @@ demo-game 폴더 안의 make파일을 실행한 결과물 demo-game을 실행하
 
 ## snake-game 빌드 방법
 
+ncurses가 설치되어 있어야 빌드할 수 있습니다.
 game 폴더로 cd 한 후 make로 빌드. root 폴더에 snack-game이 생성됩니다.
 
 ## 목표
