@@ -1,4 +1,4 @@
-#include "mangers.h"
+#include "managers.h"
 #include <ncurses.h>
 #include <random>
 #include <vector>
@@ -121,6 +121,7 @@ void GameManager::updateGame()
             }
         }
     }
+
     // gate 통과중일 시
     if (gate_passing_required_count > 0)
     {
@@ -268,7 +269,6 @@ void GameManager::tryMoveHeadTo(int next_X, int next_Y, int head_X, int head_Y)
     }
 
     // Reverse Item 획득: 머리와 꼬리의 위치 교환
-    // -1 4 3 2 1  || length 4 => 2 3 4 -1 => 1 2 3 -1
     else if (current_game_map[next_Y][next_X] == -35)
     {
         current_game_map[head_Y][head_X] = current_snake_length;

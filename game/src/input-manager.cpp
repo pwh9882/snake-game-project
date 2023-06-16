@@ -1,4 +1,4 @@
-#include "mangers.h"
+#include "managers.h"
 #include <ncurses.h>
 InputManager::InputManager()
 {

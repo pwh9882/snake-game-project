@@ -1,4 +1,4 @@
-#include "mangers.h"
+#include "managers.h"
 #include <ncurses.h>
 extern InputManager inputManager;
 extern GameManager gameManager;

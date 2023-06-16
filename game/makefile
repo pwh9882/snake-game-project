@@ -1,13 +1,13 @@
 #makefile
 CC = g++
-CPPFLAGS = -g -lncurses -std=c++14 
+CPPFLAGS = -g -std=c++14 
 
 TARGET = snake-game #실행 파일의 이름
 OBJS = src/input-manager.o src/render-manager.o src/stage-manager.o src/snake-game.o src/game-manager.o
 
 
 $(TARGET) : $(OBJS)
-	$(CC) $^ -o $@ $(CPPFLAGS)
+	$(CC) $^ -o $@ $(CPPFLAGS) -lncurses
 	mv snake-game ../snake-game
 	
 %.o : src/%.cpp

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <ncurses.h>
-#include "mangers.h"
+#include "managers.h"
 
 using namespace std;
 using namespace chrono;
@@ -27,7 +27,7 @@ void startGame(int stage_index)
     raw();                /* Line buffering disabled      */
     keypad(stdscr, TRUE); /* We get F1, F2 etc..          */
     noecho();             /* Don't echo() while we do getch */
-    timeout(0.0001);
+    timeout(0.000001);
 
     time_point<steady_clock> fpsTimer(steady_clock::now()); // 타이머 시작
     frame FPS{};                                            // 프레임 카운터
