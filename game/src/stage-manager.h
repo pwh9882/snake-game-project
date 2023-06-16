@@ -39,9 +39,9 @@ public:
         start_snake_length = 4;
         start_snake_speed = 1;
 
-        snake_length_goal = 10;
-        growth_item_goal = 5;
-        posion_item_goal = 5;
+        snake_length_goal = 8;
+        growth_item_goal = 3;
+        posion_item_goal = 3;
         gate_pass_goal = 3;
         gate_spawn_cooltime = 10;
         item_spawn_cooltime = 5;

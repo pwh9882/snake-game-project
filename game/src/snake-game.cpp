@@ -79,7 +79,7 @@ void startGame(int stage_index)
                 gameManager.gate_spawn_cooltime_counter++;
                 gameManager.current_game_elapsed_time++;
                 thick_count = 1;
-                if (gameManager.current_game_elapsed_time % 10 == 0)
+                if (gameManager.current_game_elapsed_time % 20 == 0)
                 {
                     gameManager.current_game_speed++;
                 }
@@ -100,6 +100,7 @@ int main()
     // startGame(stage_index);
     while (true)
     {
+
         string user_input = "";
         if (gameManager.game_complete_flag == true && stage_index < 3)
         {
@@ -142,6 +143,8 @@ int main()
                 break;
             }
         }
+        cin.clear(); // cin의 상태 초기화
+        cin.sync();  // 입력 버퍼 비우기
     }
 
     return 0;
