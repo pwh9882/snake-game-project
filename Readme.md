@@ -2,6 +2,7 @@
 
 ## 개요
 
+<https://github.com/pwh9882/snake-game-project>
 스네이크 게임을 만들기 위해 nucrses와 cpp STL 라이브러리를 이용해서 제작한다.  
 
 게임은 유저의 입력을 받아 방향을 정하고 일정 시간마다 스네이크를 움직이며 게임이 진행된다.  
